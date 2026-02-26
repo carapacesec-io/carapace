@@ -374,14 +374,14 @@ export default function DemoPage() {
     timersRef.current = [];
 
     HARDEN_SUGGESTIONS.forEach((_, i) => {
-      const t = setTimeout(() => setHardenStep(i), (i + 1) * 700);
+      const t = setTimeout(() => setHardenStep(i), (i + 1) * 1400);
       timersRef.current.push(t);
     });
 
     const doneTimer = setTimeout(() => {
       setHardenStep(HARDEN_SUGGESTIONS.length);
       setHardenRunning(false);
-    }, (HARDEN_SUGGESTIONS.length + 1) * 700);
+    }, (HARDEN_SUGGESTIONS.length + 1) * 1400);
     timersRef.current.push(doneTimer);
   }, []);
 
