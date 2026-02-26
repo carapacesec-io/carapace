@@ -138,6 +138,62 @@ const X402_PRICING = [
   { endpoint: "/api/upgrade", price: "$0.05", desc: "Repo upgrade" },
 ];
 
+/* ── Harden Constants ────────────────────────────────── */
+
+const HARDEN_SUGGESTIONS = [
+  {
+    id: "harden-missing-helmet",
+    title: "Express app without helmet() middleware",
+    severity: "HIGH",
+    severityColor: "text-red-400",
+    severityBg: "bg-red-500/15",
+    file: "src/app.ts",
+    description: "helmet() sets security-related HTTP headers (X-Content-Type-Options, Strict-Transport-Security, X-Frame-Options, etc.).",
+    fix: 'import helmet from "helmet";\napp.use(helmet());',
+  },
+  {
+    id: "harden-missing-rate-limit",
+    title: "No rate limiting on authentication routes",
+    severity: "HIGH",
+    severityColor: "text-red-400",
+    severityBg: "bg-red-500/15",
+    file: "src/routes/auth.ts",
+    description: "Authentication endpoints without rate limiting are vulnerable to brute-force and credential-stuffing attacks.",
+    fix: 'import rateLimit from "express-rate-limit";\nconst authLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 10,\n});\napp.use("/auth", authLimiter);',
+  },
+  {
+    id: "harden-missing-csrf",
+    title: "Express app without CSRF protection",
+    severity: "MEDIUM",
+    severityColor: "text-amber-400",
+    severityBg: "bg-amber-500/15",
+    file: "src/app.ts",
+    description: "State-changing endpoints without CSRF protection allow attackers to forge requests on behalf of authenticated users.",
+    fix: 'import { doubleCsrf } from "csrf-csrf";\napp.use(doubleCsrfProtection);',
+  },
+  {
+    id: "harden-missing-csp",
+    title: "No Content-Security-Policy headers",
+    severity: "HIGH",
+    severityColor: "text-red-400",
+    severityBg: "bg-red-500/15",
+    file: "src/app.ts",
+    description: "CSP prevents XSS, clickjacking, and code injection attacks by controlling which resources the browser loads.",
+    fix: 'res.setHeader(\n  "Content-Security-Policy",\n  "default-src \'self\'; script-src \'self\'"\n);',
+  },
+  {
+    id: "harden-ts-no-strict",
+    title: "TypeScript strict mode not enabled",
+    severity: "MEDIUM",
+    severityColor: "text-amber-400",
+    severityBg: "bg-amber-500/15",
+    file: "tsconfig.json",
+    description: "Strict mode enables strictNullChecks, noImplicitAny, and other checks that catch type-safety bugs before they become runtime vulnerabilities.",
+    fix: '"strict": true',
+    autoFixable: true,
+  },
+];
+
 /* ── Card (from landing page) ──────────────────────────── */
 
 const cardStyle = {
@@ -197,7 +253,7 @@ export default function DemoPage() {
   const [afterScore, setAfterScore] = useState<number | null>(null);
   const [animatedScore, setAnimatedScore] = useState<number | null>(null);
   const [scorePhase, setScorePhase] = useState<"idle" | "before" | "pause" | "after">("idle");
-  const [activeTab, setActiveTab] = useState<"results" | "x402" | "onchain">("results");
+  const [activeTab, setActiveTab] = useState<"results" | "harden" | "x402" | "onchain">("results");
   const [error, setError] = useState("");
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -205,6 +261,10 @@ export default function DemoPage() {
   const [x402Step, setX402Step] = useState<"idle" | "step1" | "step2" | "step3" | "done">("idle");
   const [x402Lines, setX402Lines] = useState<{ text: string; type: "cmd" | "response" | "status" }[]>([]);
   const x402TermRef = useRef<HTMLDivElement>(null);
+
+  // harden demo state
+  const [hardenStep, setHardenStep] = useState<number>(-1); // -1 = idle, 0-4 = revealing, 5 = done
+  const [hardenRunning, setHardenRunning] = useState(false);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -304,6 +364,24 @@ export default function DemoPage() {
 
     // Mark done
     const doneTimer = setTimeout(() => setX402Step("done"), delay);
+    timersRef.current.push(doneTimer);
+  }, []);
+
+  const runHardenDemo = useCallback(() => {
+    setHardenStep(-1);
+    setHardenRunning(true);
+    for (const t of timersRef.current) clearTimeout(t);
+    timersRef.current = [];
+
+    HARDEN_SUGGESTIONS.forEach((_, i) => {
+      const t = setTimeout(() => setHardenStep(i), (i + 1) * 700);
+      timersRef.current.push(t);
+    });
+
+    const doneTimer = setTimeout(() => {
+      setHardenStep(HARDEN_SUGGESTIONS.length);
+      setHardenRunning(false);
+    }, (HARDEN_SUGGESTIONS.length + 1) * 700);
     timersRef.current.push(doneTimer);
   }, []);
 
@@ -475,6 +553,16 @@ export default function DemoPage() {
               }`}
             >
               Scan Results
+            </button>
+            <button
+              onClick={() => setActiveTab("harden")}
+              className={`text-[13px] font-bold px-4 py-2 rounded-lg transition-colors ${
+                activeTab === "harden"
+                  ? "bg-[#1e1e1e] text-[#e0e0e0]"
+                  : "text-[#555] hover:text-[#e0e0e0]"
+              }`}
+            >
+              Harden
             </button>
             <button
               onClick={() => setActiveTab("x402")}
@@ -747,6 +835,127 @@ export default function DemoPage() {
                 </Card>
               )}
             </>
+          ) : activeTab === "harden" ? (
+            /* Harden Tab */
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4">
+              {/* Left: Terminal output */}
+              <Card>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
+                  <div className="flex items-center gap-3">
+                    <TerminalDots />
+                    <span className="text-[12px] font-bold text-[#e0e0e0]">carapace harden .</span>
+                  </div>
+                  <button
+                    onClick={runHardenDemo}
+                    disabled={hardenRunning}
+                    className="text-[11px] px-3 py-1.5 bg-[#4ade80] hover:bg-[#22c55e] disabled:bg-[#4ade80]/50 text-[#131313] rounded-md font-bold transition-colors"
+                  >
+                    {hardenStep === -1 ? "Run" : hardenStep >= HARDEN_SUGGESTIONS.length ? "Replay" : "Running..."}
+                  </button>
+                </div>
+                <div className="p-4 font-mono text-[12px] leading-6 overflow-y-auto max-h-[540px] min-h-[320px]">
+                  {hardenStep === -1 ? (
+                    <div className="flex items-center justify-center h-full min-h-[280px] text-[#444] text-[13px]">
+                      Click <span className="text-[#4ade80] font-bold mx-1">Run</span> to simulate a hardening check
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Header lines */}
+                      <div className="text-[#4ade80] mb-1">$ carapace harden .</div>
+                      <div className="text-[#666] mb-1">[carapace] Hardening check: /app</div>
+                      <div className="text-[#666] mb-3">[carapace] Detected: express, typescript</div>
+
+                      {/* Suggestions revealed one by one */}
+                      {HARDEN_SUGGESTIONS.map((s, i) => (
+                        hardenStep >= i && (
+                          <div
+                            key={s.id}
+                            className="mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[#e0e0e0] font-bold">{i + 1}.</span>
+                              <span className="text-[#e0e0e0] font-bold">{s.title}</span>
+                              {s.autoFixable && (
+                                <span className="text-[10px] text-[#666]">[auto-fixable]</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mb-1 pl-4">
+                              <span className={`text-[10px] font-bold rounded px-1.5 py-0.5 ${s.severityColor} ${s.severityBg}`}>
+                                {s.severity}
+                              </span>
+                              <span className="text-[10px] text-[#555]">{s.id}</span>
+                            </div>
+                            <div className="text-[#555] text-[11px] pl-4 mb-1">File: {s.file}</div>
+                            <div className="text-[#555] text-[11px] pl-4 mb-1">{s.description}</div>
+                            <pre className="text-[#4ade80]/60 text-[11px] pl-4 border-l-2 border-[#2a2a2a] ml-4 mt-1 whitespace-pre-wrap">{s.fix}</pre>
+                          </div>
+                        )
+                      ))}
+
+                      {/* Summary line */}
+                      {hardenStep >= HARDEN_SUGGESTIONS.length && (
+                        <div className="mt-4 pt-3 border-t border-[#2a2a2a] animate-in fade-in duration-300">
+                          <span className="text-[#e0e0e0] font-bold">5 suggestion(s)</span>
+                          <span className="text-[#666]">: </span>
+                          <span className="text-red-400 font-bold">3 high</span>
+                          <span className="text-[#666]">, </span>
+                          <span className="text-amber-400 font-bold">2 medium</span>
+                          <span className="text-[#666]"> — 1 auto-fixable with --apply</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Right: What it checks + install */}
+              <div className="space-y-4">
+                <Card className="p-5">
+                  <h3 className="text-[12px] font-bold text-[#e0e0e0] mb-4">Security Controls</h3>
+                  <div className="space-y-3">
+                    {HARDEN_SUGGESTIONS.map((s, i) => {
+                      const isRevealed = hardenStep >= i;
+                      return (
+                        <div key={s.id} className="flex items-start gap-2.5">
+                          <div
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all duration-300 mt-0.5 ${
+                              isRevealed
+                                ? "border-red-400 bg-red-400/20"
+                                : "border-[#333]"
+                            }`}
+                          >
+                            {isRevealed ? (
+                              <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            ) : (
+                              <span className="text-[9px] text-[#444]">{i + 1}</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className={`text-[12px] font-bold ${isRevealed ? "text-[#e0e0e0]" : "text-[#555]"}`}>
+                              {s.title.length > 35 ? s.title.slice(0, 35) + "..." : s.title}
+                            </p>
+                            <p className="text-[10px] text-[#444]">{s.file}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+
+                <Card className="p-5">
+                  <h3 className="text-[12px] font-bold text-[#e0e0e0] mb-3">Try it</h3>
+                  <div className="bg-[#131313] rounded-lg p-3 font-mono text-[11px] text-[#4ade80] mb-3">
+                    <div>$ npm i -g @carapacesecurity/cli</div>
+                    <div className="mt-1">$ carapace harden .</div>
+                  </div>
+                  <p className="text-[11px] text-[#555]">
+                    Suggestion-only by default. Use <span className="text-[#e0e0e0] font-mono">--apply</span> to auto-fix tsconfig strict mode.
+                  </p>
+                </Card>
+              </div>
+            </div>
           ) : activeTab === "x402" ? (
             /* x402 Payments Tab */
             <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
