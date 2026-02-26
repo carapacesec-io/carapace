@@ -8,8 +8,8 @@ import {
   createProvider,
   loadConfig,
   filterByConfig,
-} from "@carapace/engine";
-import type { CreateProviderOptions } from "@carapace/engine";
+} from "@carapacesecurity/engine";
+import type { CreateProviderOptions } from "@carapacesecurity/engine";
 
 export interface RewriteOptions {
   path: string;

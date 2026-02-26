@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { validateTargetUrl } from "@/lib/attack/validate-target";
 import { runRecon } from "@/lib/attack/recon";
 import { withX402 } from "@/lib/x402-middleware";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 async function handleRecon(request: NextRequest) {
   const session = await auth();

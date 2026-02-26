@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getAgentIdentity, getReputation } from "@/lib/erc8004";
-import { CWE_OWASP_MAP } from "@carapace/engine";
+import { CWE_OWASP_MAP } from "@carapacesecurity/engine";
 import { unstable_cache } from "next/cache";
 
 export const dynamic = "force-dynamic";

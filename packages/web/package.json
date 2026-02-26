@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
-    "@carapace/engine": "workspace:*",
+    "@carapacesecurity/engine": "workspace:*",
     "@ethereum-attestation-service/eas-sdk": "^2.9.0",
     "@octokit/auth-app": "^8.2.0",
     "@prisma/client": "^6.3.0",

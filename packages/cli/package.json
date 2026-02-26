@@ -1,6 +1,6 @@
 {
   "name": "@carapacesecurity/cli",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "description": "Security scanner & code cleaner CLI — 120+ rules, auto-fix, AI-powered rewrite",
   "license": "MIT",
   "author": "Carapace Security <hello@carapacesec.io>",
@@ -26,12 +26,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --clean",
+    "build": "tsup",
     "dev": "tsup src/cli.ts --format esm --watch",
     "test": "vitest run"
   },
   "dependencies": {
-    "@carapace/engine": "workspace:*"
+    "@carapacesecurity/engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

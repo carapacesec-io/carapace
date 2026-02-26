@@ -8,7 +8,7 @@ import {
   _ALL_RULES,
   loadConfig,
   filterByConfig,
-} from "@carapace/engine";
+} from "@carapacesecurity/engine";
 
 export interface CleanOptions {
   path: string;

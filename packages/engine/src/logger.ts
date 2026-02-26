@@ -1,5 +1,5 @@
 /**
- * Minimal structured logger for @carapace/engine.
+ * Minimal structured logger for @carapacesecurity/engine.
  *
  * Respects CARAPACE_LOG_LEVEL env var (debug | info | warn | error | silent).
  * Writes to stderr so stdout stays clean for CLI/CI output.

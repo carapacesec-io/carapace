@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// @carapace/engine
+// @carapacesecurity/engine
 //
 // AI-powered code review engine. Shared by the web worker and GitHub Action.
 // ---------------------------------------------------------------------------
@@ -154,6 +154,9 @@ export { loadConfig, filterByConfig, type CarapaceConfig } from "./config.js";
 
 // Logger
 export { logger } from "./logger.js";
+
+// Harden
+export { runHarden, applyHardenFix, type HardenSuggestion, type HardenResult } from "./harden/harden.js";
 
 // Main orchestrator
 export { analyze, dedupeFindings, type AnalyzeParams } from "./analyzer.js";

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@carapace/engine"],
+  transpilePackages: ["@carapacesecurity/engine"],
 };
 
 export default nextConfig;

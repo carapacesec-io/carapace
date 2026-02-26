@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import { resolve } from "node:path";
-import { analyze, analyzeFullScan, createProvider, computeScore, loadConfig, filterByConfig } from "@carapace/engine";
-import type { CreateProviderOptions } from "@carapace/engine";
+import { analyze, analyzeFullScan, createProvider, computeScore, loadConfig, filterByConfig } from "@carapacesecurity/engine";
+import type { CreateProviderOptions } from "@carapacesecurity/engine";
 import { formatResult, type FormatOptions } from "../formatter.js";
 import { runClean } from "./clean.js";
 

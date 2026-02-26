@@ -8,7 +8,7 @@ import { runFullPentest } from "@/lib/attack/full-pentest";
 import { runRecon } from "@/lib/attack/recon";
 import { withX402 } from "@/lib/x402-middleware";
 import { createAttackScanAttestation } from "@/lib/eas";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 const DEDUCTIONS: Record<string, number> = {
   CRITICAL: 15, HIGH: 8, MEDIUM: 3, LOW: 1, INFO: 0,

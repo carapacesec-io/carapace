@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Octokit } from "octokit";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 interface FileTransform {
   filePath: string;

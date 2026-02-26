@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import { Octokit } from "octokit";
 import { createAppAuth } from "@octokit/auth-app";
-import { analyze, computeScore } from "@carapace/engine";
+import { analyze, computeScore } from "@carapacesecurity/engine";
 import { readFileSync } from "node:fs";
 import { prisma } from "../lib/prisma.js";
 

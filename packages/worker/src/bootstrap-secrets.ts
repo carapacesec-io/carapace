@@ -1,4 +1,4 @@
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 /**
  * Fetches secrets from AWS Secrets Manager and injects them into process.env.

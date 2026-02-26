@@ -1,5 +1,5 @@
 import { Job, Queue } from "bullmq";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 import { prisma } from "../lib/prisma.js";
 import { processFullScan, type FullScanJobData } from "./full-scan.js";
 import { notifyScanCompletion, notifyCriticalFinding } from "../lib/notify.js";

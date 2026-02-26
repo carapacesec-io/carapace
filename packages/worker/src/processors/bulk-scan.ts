@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { analyzeFullScan, logger } from "@carapace/engine";
+import { analyzeFullScan, logger } from "@carapacesecurity/engine";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdtemp, rm } from "node:fs/promises";

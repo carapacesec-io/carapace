@@ -1,4 +1,4 @@
-import { getAllRules } from "@carapace/engine";
+import { getAllRules } from "@carapacesecurity/engine";
 import { formatRulesTable } from "../formatter.js";
 
 export function runRules(ruleset?: string): void {

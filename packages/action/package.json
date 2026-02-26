@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@carapace/engine": "workspace:*",
+    "@carapacesecurity/engine": "workspace:*",
     "@actions/core": "^1.11.0",
     "@actions/github": "^6.0.0"
   },

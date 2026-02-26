@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getInstallationOctokit } from "@/lib/github";
-import { applyFixes, logger, type FileFixInput } from "@carapace/engine";
+import { applyFixes, logger, type FileFixInput } from "@carapacesecurity/engine";
 
 export async function POST(
   _request: NextRequest,

@@ -6,8 +6,9 @@ import { runInit, type InitOptions } from "./commands/init.js";
 import { runClean, type CleanOptions } from "./commands/clean.js";
 import { runRewrite, type RewriteOptions } from "./commands/rewrite.js";
 import { runBulk, type BulkOptions } from "./commands/bulk.js";
+import { runHardenCommand, type HardenOptions } from "./commands/harden.js";
 
-const VERSION = "0.1.1";
+const VERSION = "0.3.0";
 
 function printHelp(): void {
   process.stdout.write(`
@@ -20,6 +21,7 @@ function printHelp(): void {
   carapace clean [path]             Auto-fix code issues (default: .)
   carapace rewrite [path]           AI-powered code rewrite
   carapace init [path]              Set up Carapace in a project
+  carapace harden [path]             Check for missing security controls
   carapace bulk                      Bulk scan repos from various sources
   carapace rules                    List all rules with CWE/OWASP tags
   carapace version                  Print version
@@ -39,6 +41,10 @@ function printHelp(): void {
   --severity <level>           Only fix findings >= severity (default: all)
   --interactive                Approve each fix individually (y/n/a/q)
   --undo                       Restore files from last clean backup
+
+\x1b[1mHARDEN OPTIONS\x1b[0m
+  --apply                        Auto-fix applicable suggestions (tsconfig strict)
+  --format <fmt>                 Output: table, json (default: table)
 
 \x1b[1mBULK OPTIONS\x1b[0m
   --source <type>                Source: github-trending, github-search, github-stars, manual-list
@@ -69,6 +75,8 @@ function printHelp(): void {
   carapace rewrite src/app.ts --dry-run               AI-rewrite a file
   carapace scan . --format json --output report.json  JSON report to file
   carapace scan . --fail-on high                      CI gate on high+ findings
+  carapace harden .                                   Check for missing security controls
+  carapace harden . --apply                           Auto-fix applicable suggestions
   carapace rules --ruleset solidity                   List Solidity rules
   carapace bulk --source github-trending --count 50   Bulk scan trending repos
   carapace bulk --source manual-list --repos "a/b,c/d" Scan specific repos
@@ -87,7 +95,7 @@ function printHelp(): void {
 const BOOLEAN_FLAGS = new Set([
   "static-only", "full", "help", "version", "skip-hook",
   "dry-run", "fix", "interactive", "undo", "verbose", "quiet",
-  "no-poll",
+  "no-poll", "apply",
 ]);
 
 const KNOWN_FLAGS = new Set([
@@ -214,6 +222,16 @@ async function main(): Promise<void> {
         dryRun: args["dry-run"] === "true",
       };
       await runRewrite(rewriteOpts);
+      break;
+    }
+
+    case "harden": {
+      const hardenOpts: HardenOptions = {
+        path: positional[0] || ".",
+        apply: args["apply"] === "true",
+        format: (args["format"] as "table" | "json") || "table",
+      };
+      await runHardenCommand(hardenOpts);
       break;
     }
 

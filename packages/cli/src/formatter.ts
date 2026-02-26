@@ -1,5 +1,5 @@
-import type { Finding, ReviewResult, SecurityScoreOutput } from "@carapace/engine";
-import { generateMarkdownReport, computeScore, getCweOwasp } from "@carapace/engine";
+import type { Finding, ReviewResult, SecurityScoreOutput } from "@carapacesecurity/engine";
+import { generateMarkdownReport, computeScore, getCweOwasp } from "@carapacesecurity/engine";
 
 // ANSI escape codes — no dependencies needed
 const RESET = "\x1b[0m";

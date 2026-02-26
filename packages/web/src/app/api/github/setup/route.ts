@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppOctokit, getInstallationOctokit } from "@/lib/github";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 /**
  * GET /api/github/setup?installation_id=XXX&setup_action=install

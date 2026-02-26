@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { _scanFile, _ALL_RULES, computeScore } from "@carapace/engine";
-import type { Finding } from "@carapace/engine";
+import { _scanFile, _ALL_RULES, computeScore } from "@carapacesecurity/engine";
+import type { Finding } from "@carapacesecurity/engine";
 
 /* Simple in-memory rate limiter: 5 scans per minute per IP */
 const rateMap = new Map<string, { count: number; resetAt: number }>();

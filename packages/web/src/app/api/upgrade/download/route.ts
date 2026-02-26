@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as zip from "@zip.js/zip.js";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 interface FileTransform {
   filePath: string;

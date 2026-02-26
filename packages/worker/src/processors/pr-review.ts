@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import { Octokit } from "octokit";
 import { createAppAuth } from "@octokit/auth-app";
-import { analyze, formatAsReviewComments, createProvider, applyFixes, computeScore, logger, type AIProvider, type FileFixInput } from "@carapace/engine";
+import { analyze, formatAsReviewComments, createProvider, applyFixes, computeScore, logger, type AIProvider, type FileFixInput } from "@carapacesecurity/engine";
 import { commitFixes } from "../github/commit-fixes.js";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";

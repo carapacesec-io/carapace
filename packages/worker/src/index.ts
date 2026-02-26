@@ -1,6 +1,6 @@
 import { Worker, Queue } from "bullmq";
 import IORedis from "ioredis";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 import { processPRReview } from "./processors/pr-review.js";
 import { processFullScan } from "./processors/full-scan.js";
 import { processBulkScan } from "./processors/bulk-scan.js";

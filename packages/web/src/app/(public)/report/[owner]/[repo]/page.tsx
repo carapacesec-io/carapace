@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { CWE_OWASP_MAP } from "@carapace/engine";
+import { CWE_OWASP_MAP } from "@carapacesecurity/engine";
 
 const DEDUCTIONS: Record<string, number> = {
   CRITICAL: 15,

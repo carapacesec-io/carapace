@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { submitFeedback, isERC8004Configured } from "@/lib/erc8004";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 export async function POST(request: NextRequest) {
   const session = await auth();

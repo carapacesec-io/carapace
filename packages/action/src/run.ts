@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { analyze, formatAsReviewComments } from "@carapace/engine";
-import type { Finding } from "@carapace/engine";
+import { analyze, formatAsReviewComments } from "@carapacesecurity/engine";
+import type { Finding } from "@carapacesecurity/engine";
 
 const SEVERITY_ORDER = ["info", "low", "medium", "high", "critical"] as const;
 

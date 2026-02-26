@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { reviewQueue } from "@/lib/queue";
 import { verifyWebhookSignature } from "@/lib/github";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 export async function POST(request: NextRequest) {
   try {

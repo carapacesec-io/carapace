@@ -1,7 +1,7 @@
 {
-  "name": "@carapace/engine",
-  "version": "0.1.0",
-  "description": "Core analysis engine for Carapace — 96 detection rules, static + AI scanning, scoring",
+  "name": "@carapacesecurity/engine",
+  "version": "0.3.0",
+  "description": "Core analysis engine for Carapace — 120+ detection rules, static + AI scanning, scoring",
   "license": "MIT",
   "author": "Carapace Security <hello@carapacesec.io>",
   "homepage": "https://carapacesec.io",

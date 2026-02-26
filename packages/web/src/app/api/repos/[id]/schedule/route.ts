@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { scheduleSyncQueue } from "@/lib/queue";
 import { z } from "zod";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 const cronRegex = /^(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)$/;
 

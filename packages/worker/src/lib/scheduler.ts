@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 import { prisma } from "./prisma.js";
 
 /**

@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@carapace/engine": "workspace:*",
+    "@carapacesecurity/engine": "workspace:*",
     "@octokit/auth-app": "^7.1.0",
     "bullmq": "^5.30.0",
     "@prisma/client": "^6.3.0",

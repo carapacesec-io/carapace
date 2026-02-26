@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@carapace/engine";
+import { logger } from "@carapacesecurity/engine";
 
 export async function GET(request: NextRequest) {
   const session = await auth();

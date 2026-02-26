@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runUpgrade, logger } from "@carapace/engine";
+import { runUpgrade, logger } from "@carapacesecurity/engine";
 import { withX402 } from "@/lib/x402-middleware";
 
 async function handleUpgrade(request: NextRequest) {

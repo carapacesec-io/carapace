@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { analyze, logger } from "@carapace/engine";
+import { analyze, logger } from "@carapacesecurity/engine";
 import { x402Config } from "@/lib/x402";
 
 function validateApiKey(provided: string): boolean {

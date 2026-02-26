@@ -8,7 +8,7 @@ import {
   computeScore,
   discoverFiles,
   type Finding,
-} from "@carapace/engine";
+} from "@carapacesecurity/engine";
 
 export interface SlackScanJobData {
   repoFullName: string;

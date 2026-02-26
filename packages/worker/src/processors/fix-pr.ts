@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import { Octokit } from "octokit";
 import { createAppAuth } from "@octokit/auth-app";
-import { applyFixes, logger, type FileFixInput } from "@carapace/engine";
+import { applyFixes, logger, type FileFixInput } from "@carapacesecurity/engine";
 import { readFileSync } from "node:fs";
 import { prisma } from "../lib/prisma.js";
 import { commitFixes } from "../github/commit-fixes.js";
