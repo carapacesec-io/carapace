@@ -1011,3 +1011,86 @@ describe("React Rules", () => {
     expect(findings.length).toBe(0);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  Insecure TLS                                                       */
+/* ------------------------------------------------------------------ */
+
+describe("cp-sec-insecure-tls", () => {
+  it("detects rejectUnauthorized: false", () => {
+    const code = `const agent = new https.Agent({ rejectUnauthorized: false });`;
+    const findings = scan("cp-sec-insecure-tls", "server.ts", code);
+    expect(findings.length).toBe(1);
+    expect(findings[0].severity).toBe("high");
+  });
+
+  it("detects NODE_TLS_REJECT_UNAUTHORIZED = '0'", () => {
+    const code = `process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";`;
+    const findings = scan("cp-sec-insecure-tls", "app.ts", code);
+    expect(findings.length).toBe(1);
+  });
+
+  it("allows rejectUnauthorized: true", () => {
+    const code = `const agent = new https.Agent({ rejectUnauthorized: true });`;
+    const findings = scan("cp-sec-insecure-tls", "server.ts", code);
+    expect(findings.length).toBe(0);
+  });
+
+  it("skips test files", () => {
+    const code = `const agent = new https.Agent({ rejectUnauthorized: false });`;
+    const findings = scan("cp-sec-insecure-tls", "server.test.ts", code);
+    expect(findings[0]?.severity ?? "info").toBe("info");
+  });
+
+  it("provides auto-fix", () => {
+    const rule = findRule("cp-sec-insecure-tls");
+    expect(rule.fixFn).toBeDefined();
+    const fixed = rule.fixFn!("  rejectUnauthorized: false,");
+    expect(fixed).toContain("rejectUnauthorized: true");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Unrestricted File Upload                                           */
+/* ------------------------------------------------------------------ */
+
+describe("cp-sec-unrestricted-upload", () => {
+  it("detects empty multer() call", () => {
+    const code = `const upload = multer();`;
+    const findings = scan("cp-sec-unrestricted-upload", "routes.ts", code);
+    expect(findings.length).toBe(1);
+    expect(findings[0].severity).toBe("high");
+  });
+
+  it("detects multer config without fileFilter or limits (multiline)", () => {
+    const code = `const upload = multer({
+  dest: "uploads/",
+  storage: diskStorage({ destination: "uploads/" }),
+});`;
+    const findings = scan("cp-sec-unrestricted-upload", "routes.ts", code);
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("allows multer with fileFilter", () => {
+    const code = `const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "image/png") cb(null, true);
+    else cb(new Error("Invalid type"));
+  },
+});`;
+    const findings = scan("cp-sec-unrestricted-upload", "routes.ts", code);
+    // The multiline pattern should NOT match because fileFilter is present
+    const multilineFindings = findings.filter(f => f.startLine !== f.endLine || f.codeSnippet.includes("dest"));
+    expect(multilineFindings.length).toBe(0);
+  });
+
+  it("allows multer with limits", () => {
+    const code = `const upload = multer({
+  limits: { fileSize: 5 * 1024 * 1024 },
+});`;
+    const findings = scan("cp-sec-unrestricted-upload", "routes.ts", code);
+    const multilineFindings = findings.filter(f => f.codeSnippet.includes("limits"));
+    expect(multilineFindings.length).toBe(0);
+  });
+});
