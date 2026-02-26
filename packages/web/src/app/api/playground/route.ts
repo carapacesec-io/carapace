@@ -5,6 +5,14 @@ import type { Finding } from "@carapacesecurity/engine";
 /* Simple in-memory rate limiter: 5 scans per minute per IP */
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 
+/* Prevent unbounded memory growth: purge expired entries every 5 minutes */
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateMap) {
+    if (now > entry.resetAt) rateMap.delete(ip);
+  }
+}, 5 * 60_000).unref();
+
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = rateMap.get(ip);
