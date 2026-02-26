@@ -38,7 +38,7 @@ export default function LandingPage() {
           <nav className="flex items-center gap-6">
             <Link href="/playground" className="text-[14px] text-[#666] hover:text-[#e0e0e0] transition-colors">Playground</Link>
             <Link href="/stats" className="text-[14px] text-[#666] hover:text-[#e0e0e0] transition-colors">Stats</Link>
-            <a href="https://github.com/carapacesec" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#666] hover:text-[#e0e0e0] transition-colors">GitHub</a>
+            <a href="https://github.com/carapacesec-io/carapace" target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#666] hover:text-[#e0e0e0] transition-colors">GitHub</a>
             <a href="https://x.com/carapacesec_" target="_blank" rel="noopener noreferrer" className="text-[#666] hover:text-[#e0e0e0] transition-colors">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -64,7 +64,7 @@ export default function LandingPage() {
               <Link href="/playground" className="text-[14px] px-7 py-3 bg-[#e0e0e0] hover:bg-white text-[#131313] rounded-lg font-bold transition-colors">
                 Try the playground
               </Link>
-              <a href="https://github.com/carapacesec" target="_blank" rel="noopener noreferrer" className="text-[14px] px-7 py-3 text-[#888] hover:text-[#e0e0e0] border border-[#2a2a2a] hover:border-[#444] rounded-lg font-bold transition-colors">
+              <a href="https://github.com/carapacesec-io/carapace" target="_blank" rel="noopener noreferrer" className="text-[14px] px-7 py-3 text-[#888] hover:text-[#e0e0e0] border border-[#2a2a2a] hover:border-[#444] rounded-lg font-bold transition-colors">
                 View source
               </a>
             </div>
@@ -363,7 +363,7 @@ export default function LandingPage() {
               <span className="text-[14px] font-bold text-[#555]">carapace security</span>
             </div>
             <div className="flex items-center gap-6 text-[13px] text-[#555]">
-              <a href="https://github.com/carapacesec" target="_blank" rel="noopener noreferrer" className="hover:text-[#e0e0e0] transition-colors">GitHub</a>
+              <a href="https://github.com/carapacesec-io/carapace" target="_blank" rel="noopener noreferrer" className="hover:text-[#e0e0e0] transition-colors">GitHub</a>
               <a href="https://x.com/carapacesec_" target="_blank" rel="noopener noreferrer" className="hover:text-[#e0e0e0] transition-colors">X</a>
               <a href="mailto:hello@carapace.io" className="hover:text-[#e0e0e0] transition-colors">Contact</a>
             </div>

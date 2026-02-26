@@ -5,14 +5,14 @@
   "license": "MIT",
   "author": "Carapace Security <hello@carapacesec.io>",
   "homepage": "https://carapacesec.io",
-  "bugs": "https://github.com/carapacesecurity/carapace/issues",
+  "bugs": "https://github.com/carapacesec-io/carapace/issues",
   "keywords": ["security", "scanner", "static-analysis", "code-review", "vulnerability-detection"],
   "engines": {
     "node": ">=20"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/carapacesecurity/carapace.git",
+    "url": "https://github.com/carapacesec-io/carapace.git",
     "directory": "packages/engine"
   },
   "publishConfig": {

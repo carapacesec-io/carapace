@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/carapacesecurity/carapace.git",
+    "url": "https://github.com/carapacesec-io/carapace.git",
     "directory": "packages/carapace-bin"
   },
   "description": "Carapace CLI — automated code review",

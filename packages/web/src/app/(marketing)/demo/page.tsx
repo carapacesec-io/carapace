@@ -1003,7 +1003,7 @@ export default function DemoPage() {
           </div>
           <div className="flex items-center gap-6 text-[13px] text-[#555]">
             <a
-              href="https://github.com/carapacesec"
+              href="https://github.com/carapacesec-io/carapace"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#e0e0e0] transition-colors"
