@@ -189,6 +189,274 @@ describe("Harden engine", () => {
     });
   });
 
+  // ── CORS ──────────────────────────────────────────────────────────
+
+  describe("CORS check", () => {
+    it("flags wildcard cors()", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `import cors from "cors";\napp.use(cors());`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-cors-wildcard");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("high");
+    });
+
+    it("flags origin: '*'", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `app.use(cors({ origin: "*" }));`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-cors-wildcard");
+      expect(suggestion).toBeDefined();
+    });
+
+    it("flags origin: true", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `app.use(cors({ origin: true }));`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-cors-wildcard");
+      expect(suggestion).toBeDefined();
+    });
+
+    it("does not flag when cors has specific origin", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `app.use(cors({ origin: "https://mysite.com" }));`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-cors-wildcard");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("skips for non-web frameworks", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { lodash: "^4.0.0" } }),
+        "src/util.ts": `import _ from "lodash";`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-cors-wildcard");
+      expect(suggestion).toBeUndefined();
+    });
+  });
+
+  // ── Environment leakage ──────────────────────────────────────────
+
+  describe("env leakage check", () => {
+    it("flags .env file without .gitignore", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        ".env": "SECRET=abc123",
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-env-no-gitignore");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("high");
+    });
+
+    it("flags .env not in .gitignore", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        ".env": "SECRET=abc123",
+        ".gitignore": "node_modules\ndist\n",
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-env-not-gitignored");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("high");
+    });
+
+    it("does not flag when .env is gitignored", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        ".env": "SECRET=abc123",
+        ".gitignore": "node_modules\n.env\n",
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const envSuggestions = result.suggestions.filter((s) => s.id.startsWith("harden-env"));
+      expect(envSuggestions).toHaveLength(0);
+    });
+
+    it("skips when no .env files exist", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        ".gitignore": "node_modules\n",
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const envSuggestions = result.suggestions.filter((s) => s.id.startsWith("harden-env"));
+      expect(envSuggestions).toHaveLength(0);
+    });
+  });
+
+  // ── Error exposure ────────────────────────────────────────────────
+
+  describe("error exposure check", () => {
+    it("flags Express app without error handler", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `import express from "express";\nconst app = express();\napp.get("/", handler);\napp.listen(3000);`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-error-exposure");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("medium");
+    });
+
+    it("does not flag when custom error handler exists", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `import express from "express";\nconst app = express();\napp.use((err, req, res, next) => { res.status(500).json({ error: "oops" }); });`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-error-exposure");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("does not flag when Sentry is used", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `import * as Sentry from "@sentry/node";\nSentry.init({});\nconst app = express();`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-error-exposure");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("skips for non-Express projects", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { next: "^15.0.0" } }),
+        "src/page.tsx": `export default function Home() { return <div/>; }`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-error-exposure");
+      expect(suggestion).toBeUndefined();
+    });
+  });
+
+  // ── Input validation ──────────────────────────────────────────────
+
+  describe("input validation check", () => {
+    it("flags routes using req.body without validation", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/routes/users.ts": `router.post("/users", (req, res) => { db.create(req.body); });`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-no-input-validation");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("high");
+    });
+
+    it("does not flag when zod is used", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0", zod: "^3.0.0" } }),
+        "src/routes/users.ts": `import { z } from "zod";\nconst schema = z.object({ name: z.string() });\nrouter.post("/users", (req, res) => { schema.parse(req.body); });`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-no-input-validation");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("does not flag when joi is used", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0", joi: "^17.0.0" } }),
+        "src/routes/users.ts": `const schema = Joi.object({ name: Joi.string() });\nrouter.post("/users", (req, res) => { schema.validate(req.body); });`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-no-input-validation");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("skips when no routes accept input", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `app.get("/health", (req, res) => { res.json({ ok: true }); });`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-no-input-validation");
+      expect(suggestion).toBeUndefined();
+    });
+  });
+
+  // ── Secure cookies ────────────────────────────────────────────────
+
+  describe("secure cookies check", () => {
+    it("flags cookies without security flags", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0", "express-session": "^1.0.0" } }),
+        "src/app.ts": `import session from "express-session";\napp.use(session({ secret: "abc" }));`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-insecure-cookies");
+      expect(suggestion).toBeDefined();
+      expect(suggestion!.severity).toBe("high");
+    });
+
+    it("does not flag when secure flags are set", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0", "express-session": "^1.0.0" } }),
+        "src/app.ts": `import session from "express-session";\napp.use(session({ secret: "abc", cookie: { httpOnly: true, secure: true, sameSite: "strict" } }));`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-insecure-cookies");
+      expect(suggestion).toBeUndefined();
+    });
+
+    it("skips when no cookies/sessions are used", () => {
+      const dir = makeProject({
+        "package.json": JSON.stringify({ dependencies: { express: "^4.0.0" } }),
+        "src/app.ts": `import express from "express";\nconst app = express();\napp.listen(3000);`,
+      });
+      dirs.push(dir);
+
+      const result = runHarden(dir);
+      const suggestion = result.suggestions.find((s) => s.id === "harden-insecure-cookies");
+      expect(suggestion).toBeUndefined();
+    });
+  });
+
   // ── TypeScript strict ───────────────────────────────────────────────
 
   describe("TypeScript strict check", () => {

@@ -274,6 +274,226 @@ app.use((req, res, next) => {
   };
 }
 
+function checkCors(
+  projectPath: string,
+  sourceFiles: string[],
+  frameworks: string[],
+): HardenSuggestion | null {
+  if (!frameworks.includes("express") && !frameworks.includes("fastify") && !frameworks.includes("next")) return null;
+
+  // Check if cors is used with wildcard or no origin restriction
+  const wildcardCors = anyFileContains(sourceFiles, /cors\s*\(\s*\)/) ??
+    anyFileContains(sourceFiles, /origin\s*:\s*["'`]\*["'`]/) ??
+    anyFileContains(sourceFiles, /origin\s*:\s*true\b/);
+
+  if (wildcardCors) {
+    return {
+      id: "harden-cors-wildcard",
+      title: "CORS allows all origins",
+      description:
+        "CORS configured with wildcard (*) or origin: true allows any website to make cross-origin requests to your API. This can enable data theft if endpoints return sensitive data.",
+      filePath: relative(projectPath, wildcardCors) || wildcardCors,
+      suggestedCode: `// Restrict CORS to your actual frontend origins:
+import cors from "cors";
+
+app.use(cors({
+  origin: ["https://yourdomain.com"],
+  credentials: true,
+}));`,
+      autoFixable: false,
+      severity: "high",
+    };
+  }
+
+  return null;
+}
+
+function checkEnvLeakage(
+  projectPath: string,
+): HardenSuggestion | null {
+  const gitignorePath = join(projectPath, ".gitignore");
+  if (!existsSync(gitignorePath)) {
+    // No .gitignore at all — flag it
+    const hasEnvFile = existsSync(join(projectPath, ".env")) ||
+      existsSync(join(projectPath, ".env.local"));
+    if (!hasEnvFile) return null; // No .env files, not relevant
+
+    return {
+      id: "harden-env-no-gitignore",
+      title: ".env file exists without .gitignore",
+      description:
+        "Environment files (.env) contain secrets like API keys and database URLs. Without a .gitignore entry, these can be committed to version control and leaked publicly.",
+      filePath: ".gitignore",
+      suggestedCode: `# Add a .gitignore with at minimum:
+.env
+.env.*
+!.env.example`,
+      autoFixable: false,
+      severity: "high",
+    };
+  }
+
+  // .gitignore exists — check if .env is covered
+  try {
+    const gitignore = readFileSync(gitignorePath, "utf-8");
+    const hasEnvRule = /^\.env$/m.test(gitignore) ||
+      /^\.env\.\*$/m.test(gitignore) ||
+      /^\.env\*$/m.test(gitignore) ||
+      /^\.env\.local$/m.test(gitignore);
+    if (hasEnvRule) return null;
+
+    // Only flag if .env files actually exist
+    const hasEnvFile = existsSync(join(projectPath, ".env")) ||
+      existsSync(join(projectPath, ".env.local")) ||
+      existsSync(join(projectPath, ".env.production"));
+    if (!hasEnvFile) return null;
+
+    return {
+      id: "harden-env-not-gitignored",
+      title: ".env files not in .gitignore",
+      description:
+        "Your project has .env files but .gitignore does not exclude them. Secrets in .env files can be accidentally committed and pushed to public repositories.",
+      filePath: ".gitignore",
+      suggestedCode: `# Add these lines to .gitignore:
+.env
+.env.*
+!.env.example`,
+      autoFixable: false,
+      severity: "high",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function checkErrorExposure(
+  projectPath: string,
+  sourceFiles: string[],
+  frameworks: string[],
+): HardenSuggestion | null {
+  if (!frameworks.includes("express")) return null;
+
+  // Check if there's a custom error handler (4-arg middleware)
+  const errorHandlerPattern = /\(\s*(?:err|error)\s*,\s*req\s*,\s*res\s*,\s*next\s*\)/;
+  const hasErrorHandler = anyFileContains(sourceFiles, errorHandlerPattern);
+  if (hasErrorHandler) return null;
+
+  // Also check for error-handling packages
+  const errorPkgPattern = /express-async-errors|@sentry\/node|express-error-handler/;
+  const hasErrorPkg = anyFileContains(sourceFiles, errorPkgPattern);
+  if (hasErrorPkg) return null;
+
+  const appFile = anyFileContains(sourceFiles, /express\s*\(\s*\)/) ??
+    anyFileContains(sourceFiles, /app\.listen\s*\(/) ??
+    "app.ts";
+
+  return {
+    id: "harden-error-exposure",
+    title: "Express app without custom error handler",
+    description:
+      "Without a custom error handler, Express sends the full stack trace to clients in development and a generic HTML page in production. A proper error handler prevents information leakage and gives you control over error responses.",
+    filePath: relative(projectPath, appFile) || appFile,
+    suggestedCode: `// Add as the LAST middleware (after all routes):
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.message);
+  res.status(500).json({ error: "Internal server error" });
+});`,
+    autoFixable: false,
+    severity: "medium",
+  };
+}
+
+function checkInputValidation(
+  projectPath: string,
+  sourceFiles: string[],
+  frameworks: string[],
+): HardenSuggestion | null {
+  if (!frameworks.includes("express") && !frameworks.includes("next") && !frameworks.includes("fastify")) return null;
+
+  // Check if any validation library is in use
+  const validationPatterns = /\b(zod|z\.object|z\.string|joi|Joi\.object|yup|yup\.object|class-validator|IsString|IsEmail|ajv|validateRequest|celebrate)\b/;
+  const validationFile = anyFileContains(sourceFiles, validationPatterns);
+  if (validationFile) return null;
+
+  // Only flag if there are route handlers that accept input
+  const hasInputRoutes = anyFileContains(sourceFiles, /req\.body|request\.json\(\)|request\.body/);
+  if (!hasInputRoutes) return null;
+
+  const routeFile = anyFileContains(sourceFiles, /req\.body/) ??
+    anyFileContains(sourceFiles, /request\.json\(\)/) ??
+    "routes/index.ts";
+
+  return {
+    id: "harden-no-input-validation",
+    title: "API routes accept input without validation",
+    description:
+      "Request bodies are used directly without schema validation. Unvalidated input is the root cause of injection attacks (SQL, NoSQL, command), type confusion bugs, and unexpected crashes.",
+    filePath: relative(projectPath, routeFile) || routeFile,
+    suggestedCode: `// 1. Install: npm install zod
+// 2. Validate request bodies:
+import { z } from "zod";
+
+const CreateUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+});
+
+app.post("/users", (req, res) => {
+  const result = CreateUserSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.flatten() });
+  }
+  // result.data is now typed and validated
+});`,
+    autoFixable: false,
+    severity: "high",
+  };
+}
+
+function checkSecureCookies(
+  projectPath: string,
+  sourceFiles: string[],
+  frameworks: string[],
+): HardenSuggestion | null {
+  if (!frameworks.includes("express") && !frameworks.includes("next")) return null;
+
+  // Check if cookies/sessions are used
+  const cookiePatterns = /\b(express-session|cookie-session|cookie-parser|res\.cookie\s*\(|setCookie|set-cookie)\b/;
+  const cookieFile = anyFileContains(sourceFiles, cookiePatterns);
+  if (!cookieFile) return null;
+
+  // Check if secure flags are set
+  const secureFlags = /httpOnly\s*:\s*true|secure\s*:\s*true|sameSite\s*:\s*["'`](strict|lax|none)["'`]/;
+  const hasSecureFlags = anyFileContains(sourceFiles, secureFlags);
+  if (hasSecureFlags) return null;
+
+  return {
+    id: "harden-insecure-cookies",
+    title: "Cookies set without security flags",
+    description:
+      "Cookies (session or custom) are being set without httpOnly, secure, or sameSite flags. This makes them vulnerable to XSS theft (missing httpOnly), man-in-the-middle attacks (missing secure), and CSRF (missing sameSite).",
+    filePath: relative(projectPath, cookieFile) || cookieFile,
+    suggestedCode: `// Always set security flags on cookies:
+app.use(session({
+  cookie: {
+    httpOnly: true,   // Prevents JavaScript access (XSS protection)
+    secure: true,     // Only sent over HTTPS
+    sameSite: "lax",  // CSRF protection
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+}));
+
+// Or for individual cookies:
+res.cookie("token", value, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "strict",
+});`,
+    autoFixable: false,
+    severity: "high",
+  };
+}
+
 function checkTsStrict(
   projectPath: string,
 ): HardenSuggestion | null {
@@ -342,6 +562,11 @@ export function runHarden(projectPath: string): HardenResult {
     checkRateLimit(projectPath, sourceFiles, frameworks),
     checkCsrf(projectPath, sourceFiles, frameworks),
     checkCsp(projectPath, sourceFiles, frameworks),
+    checkCors(projectPath, sourceFiles, frameworks),
+    checkEnvLeakage(projectPath),
+    checkErrorExposure(projectPath, sourceFiles, frameworks),
+    checkInputValidation(projectPath, sourceFiles, frameworks),
+    checkSecureCookies(projectPath, sourceFiles, frameworks),
     checkTsStrict(projectPath),
   ];
 
