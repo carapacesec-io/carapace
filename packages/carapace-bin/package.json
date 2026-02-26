@@ -1,0 +1,16 @@
+{
+  "name": "carapace",
+  "version": "0.1.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carapacesecurity/carapace.git",
+    "directory": "packages/carapace-bin"
+  },
+  "description": "Carapace CLI — automated code review",
+  "bin": { "carapace": "bin/carapace.js" },
+  "files": ["bin"],
+  "dependencies": {
+    "@carapacesecurity/cli": "workspace:*"
+  }
+}

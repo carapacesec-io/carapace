@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  githubId      String?   @unique
+  accounts      Account[]
+  sessions      Session[]
+  repos         Repo[]
+  scans         Scan[]
+  attackScans   AttackScan[]
+  feedbacks     Feedback[]
+  settings      UserSettings?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Repo {
+  id              String   @id @default(cuid())
+  userId          String
+  installationId  Int
+  githubId        Int      @unique
+  fullName        String
+  defaultBranch   String   @default("main")
+  language        String?
+  isActive        Boolean  @default(true)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scans           Scan[]
+  settings        RepoSettings?
+  fixPRs          FixPR[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Scan {
+  id             String        @id @default(cuid())
+  repoId         String
+  userId         String
+  type           ScanType
+  status         ScanStatus    @default(PENDING)
+  prNumber       Int?
+  prTitle        String?
+  commitSha      String?
+  branch         String?
+  filesChanged   Int           @default(0)
+  findings       Finding[]
+  summary        String?       @db.Text
+  duration       Int?
+  score          Int?
+  grade          String?
+  attestationUid String?
+  bulkScanJobId  String?
+  bulkScanJob    BulkScanJob?  @relation("BulkScanJobScans", fields: [bulkScanJobId], references: [id])
+  repo           Repo          @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fixPR          FixPR?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Finding {
+  id          String        @id @default(cuid())
+  scanId      String
+  severity    Severity
+  category    String
+  title       String
+  description String        @db.Text
+  filePath    String
+  startLine   Int?
+  endLine     Int?
+  codeSnippet String?       @db.Text
+  suggestion  String?       @db.Text
+  fixDiff     String?       @db.Text
+  ruleId      String?
+  scan        Scan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+}
+
+model UserSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  severityThreshold  Severity @default(LOW)
+  autoReview         Boolean  @default(true)
+  ignoredPaths       String[] @default([])
+  enabledRulesets    String[] @default(["general", "crypto"])
+  slackWebhookUrl    String?
+  discordWebhookUrl  String?
+  notifyOnScheduled  Boolean  @default(true)
+  notifyOnCritical   Boolean  @default(true)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RepoSettings {
+  id                 String    @id @default(cuid())
+  repoId             String    @unique
+  severityThreshold  Severity?
+  autoReview         Boolean   @default(true)
+  autoFix            Boolean   @default(false)
+  autoFixPR          Boolean   @default(false)
+  autoFixCategories  String[]  @default([])
+  ignoredPaths       String[]  @default([])
+  enabledRulesets    String[]  @default([])
+  targetChains       String[]  @default([])
+  scheduleEnabled    Boolean   @default(false)
+  scheduleCron       String?
+  scheduleTimezone   String    @default("UTC")
+  lastScheduledAt    DateTime?
+  repo               Repo      @relation(fields: [repoId], references: [id], onDelete: Cascade)
+}
+
+enum ScanType {
+  PR_REVIEW
+  FULL_SCAN
+  MANUAL
+  BULK_SCAN
+  SCHEDULED
+}
+
+enum ScanStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum AttackType {
+  RECON
+  AUTH_AUDIT
+  API_SCAN
+  FULL_PENTEST
+}
+
+model AttackScan {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetUrl   String
+  scanType    AttackType
+  status      ScanStatus      @default(PENDING)
+  findings    AttackFinding[]
+  report      Json?
+  attestationUid String?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+}
+
+model AttackFinding {
+  id          String     @id @default(cuid())
+  scanId      String
+  scan        AttackScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  category    String
+  severity    Severity
+  title       String
+  description String     @db.Text
+  evidence    String?    @db.Text
+  remediation String?    @db.Text
+  cvss        Float?
+}
+
+model BulkScanJob {
+  id             String          @id @default(cuid())
+  name           String
+  status         BulkScanStatus  @default(PENDING)
+  source         String
+  repoList       String[]
+  totalRepos     Int             @default(0)
+  completedRepos Int             @default(0)
+  failedRepos    Int             @default(0)
+  scans          Scan[]          @relation("BulkScanJobScans")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  completedAt    DateTime?
+}
+
+enum BulkScanStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model FixPR {
+  id            String   @id @default(cuid())
+  repoId        String
+  scanId        String   @unique
+  prNumber      Int
+  prUrl         String
+  branch        String
+  filesFixed    Int      @default(0)
+  findingsFixed Int      @default(0)
+  status        String   @default("OPEN")
+  repo          Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  scan          Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scanId    String
+  rating    Int
+  tag1      String?
+  tag2      String?
+  txHash    String?
+  createdAt DateTime @default(now())
+}

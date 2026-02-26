@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #131313;
+  --color-foreground: #e0e0e0;
+  --color-card: #141414;
+  --color-card-foreground: #e0e0e0;
+  --color-popover: #141414;
+  --color-popover-foreground: #e0e0e0;
+  --color-primary: #e0e0e0;
+  --color-primary-foreground: #131313;
+  --color-secondary: #1e1e1e;
+  --color-secondary-foreground: #e0e0e0;
+  --color-muted: #1e1e1e;
+  --color-muted-foreground: #666666;
+  --color-accent: #1e1e1e;
+  --color-accent-foreground: #e0e0e0;
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #1e1e1e;
+  --color-input: #1e1e1e;
+  --color-ring: #444444;
+  --color-gray-50: #666666;
+  --color-gray-80: #444444;
+  --color-gray-100: #e0e0e0;
+  --radius: 0.5rem;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+}
+
+/* Dashboard dark theme */
+.dashboard-dark {
+  --color-background: #131313;
+  --color-foreground: #e0e0e0;
+  --color-card: #141414;
+  --color-card-foreground: #e0e0e0;
+  --color-popover: #141414;
+  --color-popover-foreground: #e0e0e0;
+  --color-primary: #e0e0e0;
+  --color-primary-foreground: #131313;
+  --color-secondary: #1e1e1e;
+  --color-secondary-foreground: #e0e0e0;
+  --color-muted: #1e1e1e;
+  --color-muted-foreground: #666666;
+  --color-accent: #1e1e1e;
+  --color-accent-foreground: #e0e0e0;
+  --color-border: #1e1e1e;
+  --color-input: #1e1e1e;
+  background: #131313;
+  color: #e0e0e0;
+}
+
+/* Marketing dark theme */
+.marketing-dark {
+  --color-background: #131313;
+  --color-foreground: #e0e0e0;
+  --color-card: #141414;
+  --color-card-foreground: #e0e0e0;
+  --color-border: #1e1e1e;
+  --color-input: #1e1e1e;
+  background: #131313;
+  color: #e0e0e0;
+}
+
+/* Animations — keep only subtle ones */
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1e1e;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+/* Code block styling */
+.code-block {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}

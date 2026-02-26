@@ -1,0 +1,51 @@
+name: "Carapace Code Review"
+description: "Automated code review — catches bugs, security issues, and code smells on every PR"
+author: "Carapace"
+
+inputs:
+  mode:
+    description: "Run mode: 'cloud' (use Carapace API) or 'local' (run analysis locally)"
+    required: false
+    default: "cloud"
+  api-key:
+    description: "Carapace API key (for cloud mode)"
+    required: false
+  anthropic-api-key:
+    description: "Anthropic API key (for local mode AI analysis; omit for static-only)"
+    required: false
+  severity-threshold:
+    description: "Minimum severity to report: critical, high, medium, low, info"
+    required: false
+    default: "low"
+  rulesets:
+    description: "Comma-separated rulesets to enable: general, attack, quality, solidity"
+    required: false
+    default: "general,attack,quality"
+  target-chains:
+    description: "Comma-separated target chains: solidity"
+    required: false
+    default: ""
+  fail-on:
+    description: "Fail the check if findings at this severity or above: critical, high, medium, low, none"
+    required: false
+    default: "high"
+  static-only:
+    description: "Run static analysis only (skip AI deep analysis)"
+    required: false
+    default: "false"
+
+outputs:
+  findings-count:
+    description: "Number of findings"
+  critical-count:
+    description: "Number of critical findings"
+  summary:
+    description: "Review summary"
+
+runs:
+  using: "node20"
+  main: "dist/run.js"
+
+branding:
+  icon: "shield"
+  color: "green"

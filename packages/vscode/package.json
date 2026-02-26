@@ -1,0 +1,83 @@
+{
+  "name": "carapace-vscode",
+  "displayName": "Carapace — Code Cleaner & Security Scanner",
+  "description": "Inline security and code quality diagnostics powered by Carapace's 96-rule pattern engine with auto-fix support.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "carapacesec",
+  "homepage": "https://carapacesec.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carapacesecurity/carapace.git",
+    "directory": "packages/vscode"
+  },
+  "bugs": "https://github.com/carapacesecurity/carapace/issues",
+  "keywords": ["security", "linter", "code-quality", "auto-fix", "scanner"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:python",
+    "onLanguage:go",
+    "onLanguage:java",
+    "onLanguage:ruby",
+    "onLanguage:php",
+    "onLanguage:solidity",
+    "onLanguage:rust"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "carapace.scan",
+        "title": "Carapace: Scan Workspace"
+      },
+      {
+        "command": "carapace.scanFile",
+        "title": "Carapace: Scan Current File"
+      },
+      {
+        "command": "carapace.fixFile",
+        "title": "Carapace: Fix All Issues in File"
+      }
+    ],
+    "configuration": {
+      "title": "Carapace",
+      "properties": {
+        "carapace.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan files on save."
+        },
+        "carapace.staticOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use static analysis only (faster, no AI)."
+        },
+        "carapace.failSeverity": {
+          "type": "string",
+          "default": "info",
+          "enum": ["critical", "high", "medium", "low", "info"],
+          "description": "Minimum severity level to show as diagnostics."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Carapace Security",
+  "description": "Automated security scanner. 96 detection rules, AI analysis, auto-fix, EAS attestations on Base.",
+  "services": [
+    { "name": "web", "endpoint": "https://carapacesec.io/" },
+    { "name": "A2A", "endpoint": "https://carapacesec.io/.well-known/agent-card.json" },
+    { "name": "api", "endpoint": "https://carapacesec.io/api/v1/review" },
+    { "name": "attack-scanner", "endpoint": "https://carapacesec.io/api/attack/scan" }
+  ],
+  "x402Support": true,
+  "active": true
+}

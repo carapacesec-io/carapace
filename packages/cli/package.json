@@ -1,0 +1,42 @@
+{
+  "name": "@carapacesecurity/cli",
+  "version": "0.1.1",
+  "description": "Security scanner & code cleaner CLI — 120+ rules, auto-fix, AI-powered rewrite",
+  "license": "MIT",
+  "author": "Carapace Security <hello@carapacesec.io>",
+  "homepage": "https://carapacesec.io",
+  "bugs": "https://github.com/carapacesecurity/carapace/issues",
+  "keywords": ["security", "scanner", "linter", "code-quality", "auto-fix", "cli"],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carapacesecurity/carapace.git",
+    "directory": "packages/cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "bin": {
+    "carapace": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/cli.ts --format esm --clean",
+    "dev": "tsup src/cli.ts --format esm --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@carapace/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

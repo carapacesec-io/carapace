@@ -1,0 +1,26 @@
+{
+  "name": "@carapace/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@carapace/engine": "workspace:*",
+    "@octokit/auth-app": "^7.1.0",
+    "bullmq": "^5.30.0",
+    "@prisma/client": "^6.3.0",
+    "ioredis": "^5.4.0",
+    "octokit": "^4.1.0",
+    "@aws-sdk/client-secrets-manager": "^3.700.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "vitest": "^3.0.0"
+  }
+}

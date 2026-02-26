@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+.turbo/
+.env
+.env.local
+*.log
+.DS_Store
+.npmrc
+
+# Proprietary trade secrets — not tracked in public repo
+*.private.ts
+!*.private.example.ts
+
+# Deployment scripts (contain infrastructure details)
+deploy.sh

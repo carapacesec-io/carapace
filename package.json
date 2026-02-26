@@ -1,0 +1,19 @@
+{
+  "name": "carapace",
+  "private": true,
+  "scripts": {
+    "prepare": "node scripts/setup-private.mjs",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "db:push": "pnpm --filter @carapace/web db:push",
+    "db:generate": "pnpm --filter @carapace/web db:generate",
+    "db:studio": "pnpm --filter @carapace/web db:studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
