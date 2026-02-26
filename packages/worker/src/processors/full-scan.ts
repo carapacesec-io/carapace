@@ -101,6 +101,26 @@ export async function processFullScan(job: Job<FullScanJobData>) {
       },
     });
 
+    // Fire-and-forget attestation via internal API
+    fetch(`${process.env.NEXTAUTH_URL}/api/internal/attest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.CARAPACE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        type: "code-review",
+        scanId,
+        repoFullName: `${owner}/${repo}`,
+        commitSha: branch,
+        score: scoreResult.score,
+        grade: scoreResult.grade,
+        findingCount: result.findings.length,
+      }),
+    }).catch((err) =>
+      console.error("[full-scan] Attestation request failed (non-fatal):", err),
+    );
+
     return { findingsCount: result.findings.length, duration };
   } catch (error) {
     await prisma.scan.update({
