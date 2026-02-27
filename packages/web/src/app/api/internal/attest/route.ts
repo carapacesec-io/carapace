@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import {
   createCodeReviewAttestation,
@@ -6,12 +7,18 @@ import {
   getAttestationUrl,
 } from "@/lib/eas";
 
-export async function POST(request: NextRequest) {
-  // Validate internal API key
-  const authHeader = request.headers.get("authorization");
-  const expectedKey = process.env.CARAPACE_API_KEY;
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
-  if (!expectedKey || authHeader !== `Bearer ${expectedKey}`) {
+export async function POST(request: NextRequest) {
+  // Validate internal API key (timing-safe to prevent extraction attacks)
+  const authHeader = request.headers.get("authorization") ?? "";
+  const expectedKey = process.env.CARAPACE_API_KEY;
+  const expectedValue = `Bearer ${expectedKey}`;
+
+  if (!expectedKey || !safeCompare(authHeader, expectedValue)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

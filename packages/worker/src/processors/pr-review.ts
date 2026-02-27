@@ -44,12 +44,13 @@ async function cloneForStaticAnalysis(
   const tmpDir = await mkdtemp(path.join(os.tmpdir(), "codecleaner-"));
 
   try {
-    // Shallow clone at the specific commit
+    // Shallow clone at the specific commit — disable hooks to prevent RCE from malicious repos
     await exec(
       "git",
       [
         "clone",
         "--depth", "1",
+        "--config", "core.hooksPath=/dev/null",
         `https://x-access-token:${token}@github.com/${owner}/${repo}.git`,
         tmpDir,
       ],
@@ -57,7 +58,7 @@ async function cloneForStaticAnalysis(
     );
 
     // Checkout the specific commit if it differs from HEAD
-    await exec("git", ["checkout", commitSha], {
+    await exec("git", ["-c", "core.hooksPath=/dev/null", "checkout", commitSha], {
       cwd: tmpDir,
       timeout: 30_000,
     }).catch(() => {

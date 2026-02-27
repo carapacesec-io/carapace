@@ -30,9 +30,10 @@ export async function processSlackScan(
     if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(repo)) {
       throw new Error(`Invalid repository name: ${repoFullName}`);
     }
+    // Disable hooks to prevent RCE from malicious repos
     execFileSync(
       "git",
-      ["clone", "--depth", "1", `https://github.com/${owner}/${repo}.git`, tmpDir],
+      ["clone", "--depth", "1", "--config", "core.hooksPath=/dev/null", `https://github.com/${owner}/${repo}.git`, tmpDir],
       { timeout: 60_000, stdio: "pipe" }
     );
 

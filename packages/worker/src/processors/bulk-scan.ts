@@ -43,9 +43,10 @@ export async function processBulkScan(job: Job<BulkScanJobData>) {
       ? `https://x-access-token:${token}@github.com/${repoFullName}.git`
       : `https://github.com/${repoFullName}.git`;
 
+    // Disable hooks to prevent RCE from malicious repos
     await exec(
       "git",
-      ["clone", "--depth", "1", "--branch", defaultBranch, cloneUrl, tmpDir],
+      ["clone", "--depth", "1", "--config", "core.hooksPath=/dev/null", "--branch", defaultBranch, cloneUrl, tmpDir],
       { timeout: 120_000, maxBuffer: 100 * 1024 * 1024 },
     );
 

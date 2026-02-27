@@ -4,6 +4,10 @@ dist/
 .turbo/
 .env
 .env.local
+.env.*
+!.env.example
+*.pem
+*.key
 *.log
 .DS_Store
 .npmrc
