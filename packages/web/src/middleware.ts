@@ -1,22 +1,30 @@
-import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export default auth((req) => {
+/**
+ * Edge-compatible middleware — checks session cookie presence only.
+ * Actual session validation happens server-side in API routes via auth().
+ * This avoids importing Prisma which doesn't work on the edge runtime.
+ */
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  const hasSession =
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("authjs.session-token");
 
   // Protected routes require authentication
   const protectedPaths = ["/dashboard", "/repos", "/scans", "/settings", "/upgrade", "/trends", "/attack"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-  if (isProtected && !req.auth) {
+  if (isProtected && !hasSession) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // API routes (except webhooks) require auth
+  // API routes (except public ones) require auth
   if (pathname.startsWith("/api/") && !pathname.startsWith("/api/webhooks/") && !pathname.startsWith("/api/auth/") && !pathname.startsWith("/api/v1/") && !pathname.startsWith("/api/upgrade") && !pathname.startsWith("/api/github/setup") && !pathname.startsWith("/api/badge/") && !pathname.startsWith("/api/bulk-scan") && !pathname.startsWith("/api/internal/") && !pathname.startsWith("/api/agent/identity") && !pathname.startsWith("/api/playground") && !pathname.startsWith("/api/slack/") && !pathname.startsWith("/api/health")) {
-    if (!req.auth) {
+    if (!hasSession) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
@@ -36,7 +44,7 @@ export default auth((req) => {
   );
 
   return response;
-});
+}
 
 export const config = {
   matcher: [
